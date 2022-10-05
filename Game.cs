@@ -4,24 +4,33 @@
     private GameState gameState;
     private bool running;
     private Player player;
-    private Enemy enemy;
+    private Queue<Level> levels;
+    private Level currentLevel;
     private int enemyCount;
 
     public Game()
     {
         gameState = GameState.MainMenu;
         player = new Player("Player 1");
-        enemy = new Enemy("", 0, 0);
+        levels = SetupLevels();
+        currentLevel = new Level();
         running = false;
     }
 
+    public Queue<Level> SetupLevels()
+    {
+        Queue<Level> levels = new Queue<Level>();
+        levels.Enqueue(new Level(new Enemy("Enemy 1", 20, 5), new HealthPotion("Minor Health", 5)));
+        levels.Enqueue(new Level(new Enemy("Enemy 2", 25, 5), new Sword("Short Sword", 20)));
+        levels.Enqueue(new Level(new Enemy("Enemy 3", 30, 10), new PlateArmor("Starter Armor", 20)));
+        levels.Enqueue(new Level(new Enemy("Enemy 4", 40, 20), new Sword("Long Sword", 30)));
+        levels.Enqueue(new Level(new Enemy("Enemy 5", 50, 20), new HealthPotion("Major Health", 50)));
+        levels.Enqueue(new Level(new Enemy("Boss", 100, 30), new Trophy("You Won!")));
+        return levels;
+    }
     public void Run()
     {
         running = true;
-        player.Inventory.Add(new HealthPotion("Minor Health", 5));
-        player.Inventory.Add(new Sword("Long Sword", 15));
-        player.Inventory.Add(new Sword("Short Sword", 10));
-        player.Inventory.Add(new PlateArmor("Starter Armor", 10));
 
         while (running)
         {
@@ -29,6 +38,11 @@
             {
                 gameState = GameState.GameOver;
             }
+            else if (levels.Count() <= 0 && currentLevel.Enemy.HP <= 0)
+            {
+                gameState = GameState.Won;
+            }
+
             switch (gameState)
             {
                 case GameState.MainMenu:
@@ -44,9 +58,19 @@
                     Battle();
                     break;
                 case GameState.GameOver:
-                    running = false;
                     Console.WriteLine("Game Over");
                     Console.WriteLine($"You beat {enemyCount} enemies");
+                    running = false;
+                    break;
+                case GameState.Won:
+                    Console.WriteLine("You defeated all the enemies");
+                    Console.WriteLine("Ending Stats:");
+                    Console.WriteLine($"Defeated {enemyCount} enemies");
+                    Console.WriteLine(player.Stats());
+                    Console.WriteLine("Press any key to exit");
+                    Console.ReadKey();
+                    Console.WriteLine();
+                    running = false;
                     break;
                 default:
                     Console.WriteLine("State not implemented");
@@ -78,7 +102,10 @@
                 gameState = GameState.Inventory;
                 break;
             case "B":
-                enemy = new Enemy($"Enemy {enemyCount + 1}", 60, 20); // create a new enemy. Maybe eventually use same enemy if you haven't won yet. 
+                if (currentLevel.Enemy.HP <= 0)
+                {
+                    currentLevel = levels.Dequeue(); // move to the next level if this one is done
+                }
                 gameState = GameState.Battle;
                 break;
             case "DIE":
@@ -146,19 +173,22 @@
         switch (input)
         {
             case "A":
-                Console.WriteLine($"You attacked {enemy.Name} for {player.ATT} damage.");
-                enemy.TakeDamage(player.ATT);
-                if (enemy.HP <= 0)
+                Console.WriteLine($"You attacked {currentLevel.Enemy.Name} for {player.ATT} damage.");
+                currentLevel.Enemy.TakeDamage(player.ATT);
+                if (currentLevel.Enemy.HP <= 0)
                 {
                     Console.WriteLine("You Won!");
                     enemyCount++;
-                    Console.WriteLine("You got a health potion");
-                    player.Inventory.Add(new HealthPotion("Minor Health", 5));
+                    if (currentLevel.Item != null)
+                    {
+                        Console.WriteLine($"You got a {currentLevel.Item}");
+                        player.Inventory.Add(currentLevel.Item);
+                    }
                     gameState = GameState.Playing;
                     break;
                 }
-                Console.WriteLine($"{enemy.Name} Attacked back for {enemy.ATT} damage. Your armor blocked {player.BaseAC} of it");
-                player.TakeDamage(enemy.ATT);
+                Console.WriteLine($"{currentLevel.Enemy.Name} Attacked back for {currentLevel.Enemy.ATT} damage. Your armor blocked {player.BaseAC} of it");
+                player.TakeDamage(currentLevel.Enemy.ATT);
                 break;
             case "R":
                 Console.WriteLine("Got away safely");
@@ -182,6 +212,7 @@
         Inventory,
         Battle,
         GameOver,
+        Won,
     }
 }
 

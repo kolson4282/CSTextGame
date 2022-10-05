@@ -7,7 +7,7 @@ class Player : Character
     public Weapon Weapon { get; set; }
     public Armor Armor { get; set; }
 
-    public Player(string name) : base(name, 100, 5)
+    public Player(string name) : base(name, 100, 10)
     {
         MaxHealth = 100;
         BaseAC = 0;
