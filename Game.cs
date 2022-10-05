@@ -108,11 +108,23 @@
             {
                 Console.WriteLine(player.Inventory.IndexOf(item) + ". " + item);
             }
-            Console.WriteLine($"Which item would you like to use? (-1 to exit)");
+            Console.WriteLine($"Which item would you like to choose? (-1 to exit)");
             try
             {
                 int input = Convert.ToInt32(Console.ReadLine());
-                player.UseItem(player.Inventory[input]);
+                Item item = player.Inventory[input];
+                Console.WriteLine("Would you like to Use this item or Drop this item? (U/D)");
+                string answer = Console.ReadLine()!.ToUpper();
+                if (answer == "D")
+                {
+                    Console.WriteLine($"Dropped {item}");
+                    player.DropItem(item);
+                }
+                else if (answer == "U")
+                {
+                    player.UseItem(player.Inventory[input]);
+                }
+
             }
             catch (Exception e)
             {

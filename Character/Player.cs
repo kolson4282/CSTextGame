@@ -69,6 +69,10 @@ class Player : Character
         item.OnEquip(this);
     }
 
+    public void DropItem(Item item)
+    {
+        Inventory.Remove(item);
+    }
     private void EquipArmor(Armor item)
     {
         if (Armor != null)
