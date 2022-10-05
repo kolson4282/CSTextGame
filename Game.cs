@@ -17,7 +17,7 @@
         running = false;
     }
 
-    public Queue<Level> SetupLevels()
+    public static Queue<Level> SetupLevels()
     {
         Queue<Level> levels = new Queue<Level>();
         levels.Enqueue(new Level(new Enemy("Enemy 1", 20, 5), new HealthPotion("Minor Health", 5)));
@@ -83,7 +83,6 @@
     private void Menu()
     {
         Console.WriteLine("Welcome to The Arena");
-        Console.WriteLine("Be sure to equip your equipment before going into the first battle.");
         gameState = GameState.Playing;
 
     }
